@@ -1,0 +1,17 @@
+{
+  "name": "unseen-ranking-lab",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Local-first why-not debugger for ranked lists",
+  "license": "MIT",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "test": "node --test tests/*.test.js",
+    "check": "npm test && npm run build",
+    "test:browser": "node scripts/browser.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

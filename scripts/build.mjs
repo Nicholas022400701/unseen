@@ -1,0 +1,16 @@
+import {readFile, writeFile, mkdir} from 'node:fs/promises';
+import {fileURLToPath} from 'node:url';
+import {resolve} from 'node:path';
+const root = fileURLToPath(new URL('../', import.meta.url));
+const read = name => readFile(resolve(root, name), 'utf8');
+const [html, css, core, data, app] = await Promise.all(['src/index.html','src/style.css','src/engine.js','src/fixtures.js','src/app.js'].map(read));
+const engine = `const Engine = (() => {${core.replaceAll('export ', '')}\nreturn {version,validate,rank,actionsFor,applyActions,minimalMasks,findRepairs,makeReport};})();`;
+const fixtures = `const PRESETS = (() => {${data.replaceAll('export ', '')}\nreturn presets;})();`;
+const js = `${engine}\n${fixtures}\n${app}`;
+if (/<\/script/i.test(js)) throw new Error('Unsafe script terminator in source.');
+const result = html.replace('/* STYLE */', () => css).replace('/* SCRIPT */', () => js);
+await mkdir(resolve(root, 'dist'), {recursive: true});
+await writeFile(resolve(root, 'dist/index.html'), result);
+const {presets} = await import('../src/fixtures.js');
+await writeFile(resolve(root, 'examples/quiet-breakthrough.json'), JSON.stringify(presets[0], null, 2) + '\n');
+console.log(`Built dist/index.html (${Buffer.byteLength(result)} bytes), with no runtime dependencies.`);
